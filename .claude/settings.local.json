@@ -1,11 +1,12 @@
 {
-  "enabledMcpjsonServers": [
-    "mcp-unity"
-  ],
-  "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
-      "mcp__mcp-unity__get_scene_info"
+      "mcp__mcp-unity__get_scene_info",
+      "Bash(tasklist //FI \"IMAGENAME eq Unity.exe\")"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "mcp-unity"
+  ]
 }

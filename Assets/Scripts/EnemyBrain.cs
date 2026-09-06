@@ -20,6 +20,9 @@ public class EnemyBrain : MonoBehaviour
     // 지금 이 순간 실제로 보고 있는가 (빨강이면 true)
     public bool SeeingNow { get; private set; } = false;
 
+    // 플레이어가 권총으로 이 적을 조준(마우스 오버) 중인가 — PlayerCombat이 설정
+    public bool IsHighlighted { get; set; } = false;
+
     private readonly List<ISensor> sensors = new List<ISensor>();
     private readonly List<IEnemyAction> actions = new List<IEnemyAction>();
 
@@ -48,7 +51,11 @@ public class EnemyBrain : MonoBehaviour
         // 2배속 예약 실행 중일 때만 TurnClock 시간 기준 + enemyTimeScale(절반 속도) 적용.
         bool inReservation = TurnClock.Instance != null && TurnClock.Instance.IsExecuting;
         if (!inReservation && PlayerMovement.IsTimeFrozen)
-            return;   // 시간 정지: 아무것도 안 함. OnIdle도 안 부름(조준 등 상태 보존).
+        {
+            // 시간 정지 중에도 하이라이트(마우스 오버 조준)는 반영 — 나머지 로직/OnIdle은 건너뜀(상태 보존).
+            UpdateVisual();
+            return;
+        }
 
         float rawDt = inReservation ? TurnClock.Instance.GameDeltaTime : Time.deltaTime;
         float dt = inReservation ? rawDt * enemyTimeScale : rawDt;
@@ -93,13 +100,18 @@ public class EnemyBrain : MonoBehaviour
             else a.OnIdle();
         }
 
-        // 4) 디버그 색
-        if (rend != null)
-        {
-            if (SeeingNow) rend.material.color = Color.red;
-            else if (CurrentState == State.Combat) rend.material.color = new Color(1f, 0.6f, 0f);
-            else rend.material.color = peaceColor;
-        }
+        // 4) 디버그 색 (+하이라이트)
+        UpdateVisual();
+    }
+
+    void UpdateVisual()
+    {
+        if (rend == null) return;
+
+        Color baseColor = SeeingNow ? Color.red
+                         : (CurrentState == State.Combat ? new Color(1f, 0.6f, 0f) : peaceColor);
+
+        rend.material.color = IsHighlighted ? Color.Lerp(baseColor, Color.white, 0.5f) : baseColor;
     }
 
     public void ForcePeace()

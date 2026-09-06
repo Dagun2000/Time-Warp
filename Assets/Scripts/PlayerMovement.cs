@@ -25,6 +25,13 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        // 사망: 조작 완전 정지 + 시간정지(적도 같이 멈춤)
+        if (PlayerHealth.Instance != null && PlayerHealth.Instance.IsDead)
+        {
+            IsTimeFrozen = true;
+            return;
+        }
+
         // 예약 구성/실행 중에는 자유 이동 비활성 (PlayerPlanner가 그 구간을 담당)
         if (PlayerPlanner.Instance != null && !PlayerPlanner.Instance.IsFreeRoam)
         {
@@ -46,8 +53,8 @@ public class PlayerMovement : MonoBehaviour
 
         bool moving = input.sqrMagnitude > stopThreshold * stopThreshold;
 
-        // 검 차징 중엔 시간이 계속 흘러야 노출 리스크가 성립하므로(§5), 멈춰 있어도 시간 정지 아님.
-        IsTimeFrozen = !moving && !PlayerCombat.IsChargingSword;
+        // 검 차징/권총 조준 중엔 시간이 계속 흘러야 노출 리스크가 성립하므로(§5), 멈춰 있어도 시간 정지 아님.
+        IsTimeFrozen = !moving && !PlayerCombat.IsChargingSword && !PlayerCombat.IsAimingPistol;
 
         // 차징 중엔 제자리 고정 (조준 회전은 위에서 이미 처리됨)
         if (PlayerCombat.IsChargingSword) return;

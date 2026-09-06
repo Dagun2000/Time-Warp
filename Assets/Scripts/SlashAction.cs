@@ -63,15 +63,16 @@ public class SlashAction : IPlayerAction
         }
 
         // 경로(캡슐 모양)상의 모든 적 처치
-        // start~end 선분을 pathWidth 반경의 캡슐로 훑어서 적 검출
-        RaycastHit[] hits = Physics.CapsuleCastAll(start, end, pathWidth, dir, dist, enemyMask);
-        // CapsuleCastAll은 진행 방향 캐스트라, 선분 전체를 덮기 위해 OverlapCapsule이 더 정확
+        // start~end 선분을 pathWidth 반경의 캡슐로 훑어서 적 검출 (OverlapCapsule이 선분 전체를 정확히 덮음)
         Collider[] cols = Physics.OverlapCapsule(start, end, pathWidth, enemyMask);
         foreach (var c in cols)
         {
+            var hp = c.GetComponent<EnemyHealth>();
+            if (hp == null || hp.IsDead) continue;
+
             Debug.Log($"참격! {c.name} 처치");
-            c.gameObject.SetActive(false);
-            // TODO: 탄환 충전은 여기서
+            hp.Kill(); // §5: 일섬 긋기는 체력 무관 즉사
+            WarpGauge.Instance?.Charge(); // §4/§8: 게이지 충전은 처치 기반, 검도 포함
         }
 
         // 플레이어를 경로 끝으로 순간이동 (빛 경로 느낌)

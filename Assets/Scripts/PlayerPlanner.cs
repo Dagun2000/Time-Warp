@@ -72,6 +72,8 @@ public class PlayerPlanner : MonoBehaviour
     // 1배속 자유 이동 중: 게이지가 있으면 Space로 발동 → 2배속 예약 구성(Planning)에 진입
     void FreeRoamUpdate()
     {
+        if (PlayerHealth.Instance != null && PlayerHealth.Instance.IsDead) return;
+
         if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             if (WarpGauge.Instance != null && WarpGauge.Instance.TryConsume())
